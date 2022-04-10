@@ -15,6 +15,11 @@
     limitations under the License.
 */
 
+#ifdef VITA
+int _newlib_heap_size_user   = 16 * 1024 * 1024;
+unsigned int sceLibcHeapSize = 3 * 1024 * 1024;
+#endif
+
 // Switch include only necessary for demo videos recording
 #ifdef __SWITCH__
 #include <switch.h>

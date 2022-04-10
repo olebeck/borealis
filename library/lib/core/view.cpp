@@ -1407,7 +1407,11 @@ bool View::applyXMLAttribute(std::string name, std::string value)
             unsigned char r, g, b;
             int result = sscanf(value.c_str(), "#%02hhx%02hhx%02hhx", &r, &g, &b);
 
+            #ifdef VITA // idk smth about its result is wrong
+            if(false)
+            #else
             if (result != 3)
+            #endif
                 return false;
             else if (this->colorAttributes.count(name) > 0)
             {

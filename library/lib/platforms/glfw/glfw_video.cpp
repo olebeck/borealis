@@ -30,7 +30,12 @@
 #include <glm/vec4.hpp>
 
 // nanovg implementation
+#ifdef VITA
+#define NANOVG_GLES2_IMPLEMENTATION
+#define GL_LUMINANCE 0x1909 // ????
+#else
 #define NANOVG_GL3_IMPLEMENTATION
+#endif
 #include <nanovg-gl/nanovg_gl.h>
 
 namespace brls
@@ -57,6 +62,12 @@ GLFWVideoContext::GLFWVideoContext(std::string windowTitle, uint32_t windowWidth
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     // Force scaling off to keep desired framebuffer size
     glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
+#elif defined(VITA)
+    // gles2.0 is the only supported profile on Vita
+    glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 #else
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -86,7 +97,11 @@ GLFWVideoContext::GLFWVideoContext(std::string windowTitle, uint32_t windowWidth
     Logger::info("glfw: GL Version: {}", glGetString(GL_VERSION));
 
     // Initialize nanovg
+#ifdef VITA
+    this->nvgContext = nvgCreateGLES2(NVG_STENCIL_STROKES | NVG_ANTIALIAS | NVG_DEBUG);
+#else
     this->nvgContext = nvgCreateGL3(NVG_STENCIL_STROKES | NVG_ANTIALIAS);
+#endif
     if (!this->nvgContext)
     {
         Logger::error("glfw: unable to init nanovg");
@@ -130,7 +145,11 @@ void GLFWVideoContext::resetState()
 GLFWVideoContext::~GLFWVideoContext()
 {
     if (this->nvgContext)
+    #ifdef VITA
+        nvgDeleteGLES2(this->nvgContext);
+    #else
         nvgDeleteGL3(this->nvgContext);
+    #endif
 
     glfwTerminate();
 }
